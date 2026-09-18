@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Final Exam Jeopardy — Term 1 Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#131118;
+  --panel:#1E1A25;
+  --panel2:#241F2C;
+  --gold:#F5C518;
+  --red:#E8433F;
+  --cream:#F3ECD9;
+  --muted:#948FA0;
+  --green:#3FB68B;
+  --fade:#3A3542;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:
+    radial-gradient(circle at 50% -10%, rgba(245,197,24,0.10), transparent 55%),
+    var(--ink);
+  color:var(--cream);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+}
+.display{font-family:'Bebas Neue',sans-serif; letter-spacing:0.04em;}
+
+/* ── Header / Scoreboard ── */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 28px;
+  background:rgba(19,17,24,0.9);
+  border-bottom:1px solid rgba(245,197,24,0.25);
+  position:sticky; top:0; z-index:30;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand h1{font-size:22px; margin:0; color:var(--gold);}
+.scoreboard{display:flex; gap:10px; flex-wrap:wrap;}
+.team{
+  background:var(--panel);
+  border:1px solid var(--fade);
+  border-radius:10px;
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:150px;
+}
+.team input[type=text]{
+  background:transparent;
+  border:none;
+  color:var(--cream);
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  width:82px;
+}
+.team .score{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;
+  color:var(--gold);
+  min-width:44px;
+  text-align:center;
+}
+.team button{
+  background:var(--green);
+  color:#0d1410;
+  border:none;
+  border-radius:6px;
+  width:22px; height:22px;
+  font-weight:700;
+  cursor:pointer;
+  line-height:1;
+  font-size:13px;
+}
+.team button.minus{background:var(--red); color:white;}
+
+/* ── Main ── */
+main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:28px 18px 50px;
+  position:relative;
+}
+
+/* ── Start Screen ── */
+#startScreen{ text-align:center; max-width:640px; }
+.marquee-title{
+  font-size:56px;
+  line-height:0.95;
+  color:var(--gold);
+  text-shadow:0 0 24px rgba(245,197,24,0.45);
+}
+.subtitle{ font-size:20px; color:var(--cream); margin-top:6px; font-weight:600; }
+.desc{ color:var(--muted); margin:16px 0 26px; font-size:14px; line-height:1.55; }
+.btn-primary{
+  background:var(--red);
+  color:white;
+  border:none;
+  border-radius:12px;
+  padding:16px 34px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;
+  letter-spacing:0.06em;
+  cursor:pointer;
+  box-shadow:0 8px 0 #a72724, 0 10px 20px rgba(0,0,0,0.4);
+  transition:transform 0.08s ease;
+}
+.btn-primary:active{ transform:translateY(6px); box-shadow:0 2px 0 #a72724; }
+
+/* ── Board ── */
+#boardScreen{ display:none; width:100%; max-width:1100px; flex-direction:column; align-items:center; }
+.board-title{ font-size:32px; color:var(--gold); margin-bottom:16px; text-align:center; }
+.board{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:8px;
+  width:100%;
+}
+.cat-header{
+  background:var(--panel2);
+  border:1px solid var(--fade);
+  border-radius:8px;
+  padding:12px 6px;
+  text-align:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:16px;
+  color:var(--gold);
+  letter-spacing:0.03em;
+  min-height:52px;
+  display:flex; align-items:center; justify-content:center;
+}
+.cell{
+  background:var(--panel);
+  border:1px solid var(--fade);
+  border-radius:8px;
+  padding:18px 6px;
+  text-align:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;
+  color:var(--cream);
+  cursor:pointer;
+  transition:all 0.15s ease;
+}
+.cell:hover{ background:rgba(245,197,24,0.12); border-color:var(--gold); transform:translateY(-2px); }
+.cell.used{
+  background:rgba(255,255,255,0.02);
+  color:var(--fade);
+  cursor:default;
+  pointer-events:none;
+}
+.cell.used:hover{ transform:none; }
+
+/* ── Question Modal ── */
+#questionModal{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(10,9,14,0.92);
+  z-index:100;
+  align-items:center; justify-content:center;
+  padding:20px;
+}
+.qcard{
+  width:100%; max-width:760px;
+  background:var(--panel);
+  border:1px solid rgba(245,197,24,0.3);
+  border-radius:18px;
+  padding:36px 32px;
+  box-shadow:0 0 0 4px rgba(245,197,24,0.06), 0 24px 60px rgba(0,0,0,0.6);
+}
+.qmeta{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.qcat{ font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
+.qval{ font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--gold); }
+.qtext{ font-size:22px; font-weight:600; line-height:1.4; margin-bottom:26px; }
+.options{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
+.opt{
+  background:var(--panel2);
+  border:1px solid var(--fade);
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:16px;
+  font-weight:500;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  transition:all 0.2s ease;
+}
+.opt .num{
+  font-family:'Bebas Neue',sans-serif;
+  background:var(--gold);
+  color:var(--ink);
+  border-radius:50%;
+  width:26px; height:26px;
+  min-width:26px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+}
+.opt.correct{ background:rgba(63,182,139,0.18); border-color:var(--green); }
+.opt.correct .num{ background:var(--green); color:#0d1410; }
+.opt.dim{ opacity:0.35; }
+.explain-box{
+  background:rgba(63,182,139,0.1);
+  border:1px solid var(--green);
+  border-radius:12px;
+  padding:14px 18px;
+  margin-top:16px;
+  font-size:14px;
+  line-height:1.55;
+  display:none;
+}
+.explain-box strong{ color:var(--green); }
+.modal-controls{ display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; justify-content:center; }
+.btn{
+  background:var(--panel2);
+  color:var(--cream);
+  border:1px solid var(--fade);
+  border-radius:10px;
+  padding:11px 20px;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+}
+.btn.gold{ background:var(--gold); color:var(--ink); border:none; }
+.btn.red{ background:var(--red); color:white; border:none; }
+.award-row{ margin-top:20px; text-align:center; }
+.award-row .label{ font-size:13px; color:var(--muted); margin-bottom:10px; }
+.award-buttons{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.award-btn{
+  border:none; border-radius:10px; padding:12px 20px;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px;
+  cursor:pointer; color:#0d1410;
+}
+.award-btn.t1{ background:var(--gold); }
+.award-btn.t2{ background:var(--red); color:white; }
+.award-btn.none{ background:var(--panel2); color:var(--cream); border:1px solid var(--fade); }
+
+/* ── End Screen ── */
+#endScreen{ display:none; text-align:center; }
+.wrap-title{ font-size:52px; color:var(--gold); }
+.final-scores{ display:flex; gap:16px; justify-content:center; margin:26px 0; flex-wrap:wrap; }
+.final-card{
+  background:var(--panel);
+  border:2px solid var(--fade);
+  border-radius:14px;
+  padding:20px 28px;
+  min-width:150px;
+}
+.final-card.winner{ border-color:var(--gold); box-shadow:0 0 24px rgba(245,197,24,0.4); }
+.final-card .fname{ font-weight:600; margin-bottom:6px; }
+.final-card .fscore{ font-family:'Bebas Neue',sans-serif; font-size:42px; color:var(--gold); }
+
+@media (max-width:820px){
+  .board{ grid-template-columns:repeat(3, 1fr); }
+  .cat-header{ font-size:13px; }
+  .cell{ font-size:20px; padding:14px 4px; }
+}
+@media (max-width:560px){
+  .options{ grid-template-columns:1fr; }
+  .marquee-title{ font-size:40px; }
+  .board{ grid-template-columns:repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🎯 <h1 class="display">FINAL EXAM JEOPARDY</h1></div>
+  <div class="scoreboard" id="scoreboard"></div>
+</header>
+
+<main>
+
+  <div id="startScreen">
+    <div class="marquee-title display">TERM 1 REVIEW</div>
+    <div class="subtitle">Final Exam Jeopardy</div>
+    <div class="desc">6 categories, 5 questions each. Pick a category and point value, read the question aloud, let the teams answer — award points to whichever team gets it right first. ★ marks a concept-check question.</div>
+    <button class="btn-primary" onclick="startGame()">START GAME ▶</button>
+  </div>
+
+  <div id="boardScreen">
+    <div class="board-title display">CHOOSE A CATEGORY</div>
+    <div class="board" id="boardGrid"></div>
+  </div>
+
+  <div id="endScreen">
+    <div class="wrap-title display">THAT'S A WRAP!</div>
+    <div class="final-scores" id="finalScores"></div>
+    <button class="btn-primary" onclick="resetGame()">PLAY AGAIN</button>
+  </div>
+
+</main>
+
+<!-- Question Modal -->
+<div id="questionModal">
+  <div class="qcard">
+    <div class="qmeta">
+      <div class="qcat" id="modalCat"></div>
+      <div class="qval display" id="modalVal"></div>
+    </div>
+    <div class="qtext" id="modalQ"></div>
+    <div class="options" id="modalOpts"></div>
+    <div class="explain-box" id="modalExplain"></div>
+    <div class="modal-controls">
+      <button class="btn red" id="btnReveal" onclick="revealAnswer()">Reveal Answer</button>
+      <button class="btn" onclick="closeModal()">Close Without Scoring</button>
+    </div>
+    <div class="award-row" id="awardRow" style="display:none;">
+      <div class="label">Who got it right?</div>
+      <div class="award-buttons">
+        <button class="award-btn t1" id="btnAwardT1" onclick="awardPoints(0)"></button>
+        <button class="award-btn t2" id="btnAwardT2" onclick="awardPoints(1)"></button>
+        <button class="award-btn none" onclick="awardPoints(-1)">No one got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const board = [
+  { category: "General Grammar", questions: [
+    { value:100, q:"Shh! The baby ________ right now — don't wake her.",
+      opts:["is sleeping","sleeps","sleep","was sleeping"], correct:0,
+      explain:"'Right now' signals present continuous for an action happening at this exact moment." },
+    { value:200, q:"I ________ a text message when I accidentally dropped my phone in the pool.",
+      opts:["write","was writing","wrote","am writing"], correct:1,
+      explain:"Past continuous (was writing) for the background action, interrupted by a sudden past simple event (dropped)." },
+    { value:300, q:"We ________ this classroom three times this semester, and it still looks messy.",
+      opts:["cleaned","clean","have cleaned","were cleaning"], correct:2,
+      explain:"'This semester' is an unfinished time period with present relevance — present perfect simple." },
+    { value:400, q:"By the time I switched on the TV, the match ________ already.",
+      opts:["ended","has ended","was ending","had ended"], correct:3,
+      explain:"Past perfect (had ended) for an action completed before another past event (switched on)." },
+    { value:500, q:"★ ________ the recipe carefully, she was confident the cake would turn out perfectly.",
+      opts:["Having followed","Follow","Following","To follow"], correct:0,
+      explain:"'Having + past participle' shows the action was completed before the main clause's action — a reduced clause." },
+  ]},
+  { category: "Question Tags", questions: [
+    { value:100, q:"You've tried Thai street food before, ________?",
+      opts:["have you","haven't you","didn't you","don't you"], correct:1,
+      explain:"Positive present perfect statement ('have') → negative tag using the same auxiliary: haven't you." },
+    { value:200, q:"Your uncle doesn't own a car, ________?",
+      opts:["doesn't he","isn't he","does he","is he"], correct:2,
+      explain:"Negative statement with 'doesn't' → positive tag using the same auxiliary: does he." },
+    { value:300, q:"They watched the eclipse last night, ________?",
+      opts:["did they","weren't they","haven't they","didn't they"], correct:3,
+      explain:"Positive past simple statement → negative tag using 'did': didn't they." },
+    { value:400, q:"I'm the right person to ask about this, ________?",
+      opts:["aren't I","am I not","amn't I","isn't I"], correct:0,
+      explain:"Special case: positive 'I am' statements take the irregular negative tag 'aren't I' — not 'am I not' or 'amn't I'." },
+    { value:500, q:"★ A teacher explains the question tag rule to her class. Which statement correctly summarises it?",
+      opts:["Tags are always negative, no matter what the statement says.","A positive statement takes a negative tag, and a negative statement takes a positive tag.","The tag's polarity depends on the speaker's tone of voice.","Tags are only used with modal verbs like can and will."], correct:1,
+      explain:"The core rule: positive statement → negative tag; negative statement → positive tag, regardless of which verb or tense is used." },
+  ]},
+  { category: "Advice", questions: [
+    { value:100, q:"You've got a cold. You ________ drink plenty of water and rest.",
+      opts:["had better to","must to","should","ought"], correct:2,
+      explain:"General, mild advice uses 'should' + base verb." },
+    { value:200, q:"Your hand is bleeding badly! You ________ see a doctor immediately!",
+      opts:["should","ought to","had better to","had better"], correct:3,
+      explain:"'Had better' expresses urgent advice with a serious, immediate consequence. It never takes 'to'." },
+    { value:300, q:"As a prefect, you ________ behave responsibly and set a good example.",
+      opts:["ought to","ought","had ought to","should to"], correct:0,
+      explain:"'Ought to' is always followed by 'to' + base verb — this is the fixed form." },
+    { value:400, q:"You ________ skip breakfast before an exam; it will affect your concentration.",
+      opts:["don't should","shouldn't","not should","haven't better"], correct:1,
+      explain:"The negative of 'should' is simply 'shouldn't' — never 'don't should'." },
+    { value:500, q:"★ Why does 'had better' carry more urgency than 'should' or 'ought to'?",
+      opts:["'Had better' is only used in formal written English.","'Had better' refers only to past situations.","'Had better' implies a real, specific negative consequence if the advice is ignored.","'Had better' is simply a gentler, more polite version of 'should'."], correct:2,
+      explain:"'Had better' signals genuine urgency — a specific consequence is implied if the listener doesn't act, unlike the milder 'should' or 'ought to'." },
+  ]},
+  { category: "Obligation", questions: [
+    { value:100, q:"I ________ start saving money. It's something I've decided for myself.",
+      opts:["has to","must to","have","must"], correct:3,
+      explain:"Personal obligation — the speaker's own sense of necessity — uses 'must' + base verb (no 'to')." },
+    { value:200, q:"All players ________ wear shin guards during the match — it's a league rule.",
+      opts:["have to","must to","had better","has to"], correct:0,
+      explain:"An external rule imposed by an authority (the league) uses 'have to' with plural 'players'." },
+    { value:300, q:"You ________ bring snacks to the trip — the school is providing lunch for everyone.",
+      opts:["mustn't","don't have to","can't","shouldn't"], correct:1,
+      explain:"'Don't have to' means it isn't necessary — there's no obligation, not a prohibition." },
+    { value:400, q:"Visitors ________ feed the animals at the zoo; it's strictly forbidden.",
+      opts:["don't have to","don't must","mustn't","haven't to"], correct:2,
+      explain:"'Mustn't' expresses prohibition — this action is forbidden." },
+    { value:500, q:"★ A student writes, 'I mustn't do the reading tonight because the teacher cancelled it.' What's the problem, and how should it be fixed?",
+      opts:["Nothing is wrong; both sentences mean the same thing.","It should be 'wasn't allowed to', because 'mustn't' only expresses permission.","It should be 'didn't have to', because the cancellation is in the past.","It should be 'don't have to', because a cancelled task means it isn't necessary, not forbidden."], correct:3,
+      explain:"'Mustn't' wrongly implies prohibition. A cancelled task just removes the necessity — the correct phrase is 'don't have to'." },
+  ]},
+  { category: "Past Deduction", questions: [
+    { value:100, q:"The ground is wet and the sky is clear now. It ________ rained earlier.",
+      opts:["must have","can't have","might","should have"], correct:0,
+      explain:"Strong positive certainty based on clear evidence uses 'must have'." },
+    { value:200, q:"He ________ finished the marathon — he told me he twisted his ankle at the start.",
+      opts:["mustn't have","can't have","shouldn't have","don't have"], correct:1,
+      explain:"Strong certainty that something did NOT happen uses 'can't have'." },
+    { value:300, q:"I'm not sure why the lights are off. Everyone ________ gone to bed early.",
+      opts:["mightn't have","can't have","might have","shouldn't have"], correct:2,
+      explain:"An uncertain, possible explanation uses 'might have'." },
+    { value:400, q:"Judging by the scratch marks on the door, a cat ________ tried to get inside.",
+      opts:["shouldn't have","had to","must not have","could have"], correct:3,
+      explain:"A reasonable, evidence-based guess (not certain) uses 'could have'." },
+    { value:500, q:"★ Why are 'must have' and 'can't have' described as opposite modals for past deduction?",
+      opts:["'Must have' shows strong certainty something happened; 'can't have' shows strong certainty it did not.","They mean exactly the same thing.","'Must have' works only in questions; 'can't have' works only in statements.","'Must have' refers to the present; 'can't have' refers to the future."], correct:0,
+      explain:"They sit at opposite ends of certainty: 'must have' = strong certainty FOR, 'can't have' = strong certainty AGAINST." },
+  ]},
+  { category: "Conditionals", questions: [
+    { value:100, q:"If you ________ oil and water together, they don't mix.",
+      opts:["will pour","pour","poured","are pouring"], correct:1,
+      explain:"Zero conditional: if + present simple, present simple — a fact that's always true." },
+    { value:200, q:"If the shop ________ open, we'll buy the tickets today.",
+      opts:["was","will be","is","would be"], correct:2,
+      explain:"First conditional: if + present simple, will + base verb — a realistic future possibility." },
+    { value:300, q:"If I ________ a better singer, I would join the school choir.",
+      opts:["am","would be","will be","were"], correct:3,
+      explain:"Second conditional: if + past simple, would + base verb. 'Were' replaces 'was' for all subjects in this hypothetical mood." },
+    { value:400, q:"If she ________ her passport, she wouldn't have missed the flight.",
+      opts:["hadn't forgotten","didn't forget","wouldn't forget","hasn't forgotten"], correct:0,
+      explain:"Third conditional: if + had + past participle, would have + past participle — an impossible, unreal past." },
+    { value:500, q:"★ What's the key difference between a second and a third conditional sentence?",
+      opts:["They mean exactly the same thing.","Second conditional imagines an unreal present/future; third conditional imagines an unreal, unchangeable past.","Second conditional is always a question; third conditional is always a statement.","Third conditional can only be used with 'if I were you'."], correct:1,
+      explain:"Second conditional = hypothetical present/future (could still happen). Third conditional = a fixed, impossible-to-change past event." },
+  ]},
+];
+
+
+let teams = [ {name:"Team 1", score:0}, {name:"Team 2", score:0} ];
+let usedCells = {};
+let currentCell = null; // {catIndex, qIndex}
+let totalCells = 0;
+
+board.forEach(cat => totalCells += cat.questions.length);
+
+function renderScoreboard(){
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  teams.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'team';
+    div.innerHTML = `
+      <input type="text" value="${t.name}" onchange="renameTeam(${i}, this.value)">
+      <span class="score">${t.score}</span>
+      <div style="display:flex;gap:4px;">
+        <button class="minus" onclick="addPoint(${i}, -50)">−</button>
+        <button onclick="addPoint(${i}, 50)">+</button>
+      </div>`;
+    sb.appendChild(div);
+  });
+}
+function renameTeam(i, val){ teams[i].name = val || teams[i].name; renderScoreboard(); }
+function addPoint(i, delta){ teams[i].score = Math.max(0, teams[i].score + delta); renderScoreboard(); }
+
+function startGame(){
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('boardScreen').style.display = 'flex';
+  renderBoard();
+}
+
+function renderBoard(){
+  const grid = document.getElementById('boardGrid');
+  grid.innerHTML = '';
+  // Category headers
+  board.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'cat-header';
+    h.textContent = cat.category;
+    grid.appendChild(h);
+  });
+  // Cells, row by row (point value), column by column (category)
+  const maxRows = Math.max(...board.map(c => c.questions.length));
+  for(let row = 0; row < maxRows; row++){
+    board.forEach((cat, ci) => {
+      const q = cat.questions[row];
+      const cell = document.createElement('div');
+      const key = ci + '_' + row;
+      if(usedCells[key]){
+        cell.className = 'cell used';
+        cell.textContent = '';
+      } else {
+        cell.className = 'cell';
+        cell.textContent = q.value;
+        cell.onclick = () => openQuestion(ci, row);
+      }
+      grid.appendChild(cell);
+    });
+  }
+}
+
+function openQuestion(catIndex, qIndex){
+  currentCell = { catIndex, qIndex };
+  const cat = board[catIndex];
+  const q = cat.questions[qIndex];
+
+  document.getElementById('modalCat').textContent = cat.category;
+  document.getElementById('modalVal').textContent = q.value;
+  document.getElementById('modalQ').textContent = q.q;
+
+  const optsDiv = document.getElementById('modalOpts');
+  optsDiv.innerHTML = '';
+  q.opts.forEach((opt, idx) => {
+    const d = document.createElement('div');
+    d.className = 'opt';
+    d.id = 'modalOpt' + idx;
+    d.innerHTML = `<span class="num">${idx+1}</span><span>${opt}</span>`;
+    optsDiv.appendChild(d);
+  });
+
+  document.getElementById('modalExplain').style.display = 'none';
+  document.getElementById('modalExplain').innerHTML = '';
+  document.getElementById('btnReveal').style.display = 'inline-block';
+  document.getElementById('awardRow').style.display = 'none';
+
+  document.getElementById('questionModal').style.display = 'flex';
+}
+
+function revealAnswer(){
+  const cat = board[currentCell.catIndex];
+  const q = cat.questions[currentCell.qIndex];
+  q.opts.forEach((opt, idx) => {
+    const el = document.getElementById('modalOpt' + idx);
+    if(idx === q.correct) el.classList.add('correct');
+    else el.classList.add('dim');
+  });
+  const eb = document.getElementById('modalExplain');
+  eb.innerHTML = '<strong>Explanation:</strong> ' + q.explain;
+  eb.style.display = 'block';
+  document.getElementById('btnReveal').style.display = 'none';
+
+  document.getElementById('btnAwardT1').textContent = teams[0].name + ' +' + q.value;
+  document.getElementById('btnAwardT2').textContent = teams[1].name + ' +' + q.value;
+  document.getElementById('awardRow').style.display = 'block';
+}
+
+function awardPoints(teamIndex){
+  const cat = board[currentCell.catIndex];
+  const q = cat.questions[currentCell.qIndex];
+  if(teamIndex >= 0){
+    teams[teamIndex].score += q.value;
+    renderScoreboard();
+  }
+  const key = currentCell.catIndex + '_' + currentCell.qIndex;
+  usedCells[key] = true;
+  closeModal();
+  renderBoard();
+  checkGameOver();
+}
+
+function closeModal(){
+  document.getElementById('questionModal').style.display = 'none';
+  currentCell = null;
+}
+
+function checkGameOver(){
+  if(Object.keys(usedCells).length >= totalCells){
+    showEnd();
+  }
+}
+
+function showEnd(){
+  document.getElementById('boardScreen').style.display = 'none';
+  document.getElementById('endScreen').style.display = 'block';
+  const maxScore = Math.max(...teams.map(t => t.score));
+  const finalDiv = document.getElementById('finalScores');
+  finalDiv.innerHTML = '';
+  teams.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'final-card' + (t.score === maxScore && maxScore > 0 ? ' winner' : '');
+    card.innerHTML = `<div class="fname">${t.name}</div><div class="fscore">${t.score}</div>`;
+    finalDiv.appendChild(card);
+  });
+}
+
+function resetGame(){
+  teams.forEach(t => t.score = 0);
+  usedCells = {};
+  renderScoreboard();
+  document.getElementById('endScreen').style.display = 'none';
+  document.getElementById('boardScreen').style.display = 'none';
+  document.getElementById('startScreen').style.display = 'block';
+}
+
+renderScoreboard();
+</script>
+
+</body>
+</html>
